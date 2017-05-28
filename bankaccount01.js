@@ -28,15 +28,18 @@ console.log('You have withdrawn the amount of ' + amount + '.  Your current bala
 }
 
 
-// getBalance	
+// getBalance
 
 function getBalance (account) {
 return account.balance;
-
-
 }
-console.log('Your current balance is ' + getBalance(account) + '.')
 
+function log (msg) {
+	console.log(msg)
+}
+
+
+log('Hey! Your current balance is ' + getBalance(account) + '.')
 deposit(account, 3.00);
 deposit(account, 1.00);
 deposit(account, 50.00);

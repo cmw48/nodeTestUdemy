@@ -1,8 +1,57 @@
+/**
+udemy test file
+Chris Westling
+May 2017
+**/
+
+
 var typeOf = require('typeof');
 var storage = require('node-persist');
-//var accounts = [];
 var foundAccount = [];
 
+var argv = require('yargs')
+    .command('add', 'adding accounts', function(yargs) {
+        yargs.options({
+           description: {
+              demand: true,
+              alias: 'd',
+              description: 'Which account is this?.'
+           },
+           username: {
+              demand: true,
+              alias: 'u',
+              description: 'Type the user name for the account.'
+           },
+           password: {
+              demand: true,
+              alias: 'p',
+              description: 'Please enter your password.'
+           }
+        })
+    })
+    .command('search', 'search for an account', function(yargs) {
+       yargs.options({
+         description: {
+            demand: true,
+            alias: 'd',
+            description: 'Which account is this?.'
+        }
+      })
+    })
+    .command('clear', 'CLEAR ALL ACCOUNTS', function(yargs) {
+       yargs.options({
+
+       })
+    })
+    .help('help')
+    .argv;
+
+var command = (argv._[0]);
+
+// uncomment to see raw args
+//console.log(argv);
+
+// creates a new password record
 function createNewAccount(idno, desc, usr, passw){
   var newaccount = {};
   newaccount.id = idno;
@@ -15,6 +64,10 @@ function createNewAccount(idno, desc, usr, passw){
   writeAccounts(accounts);
 }
 
+
+// given an account description, return the username and password
+// if there are multiple entries, return them all
+// if string does not exist, return undefined
 
 function findAccount (accountDesc) {
    var accounts = readAccounts();
@@ -40,6 +93,10 @@ function findAccount (accountDesc) {
    }
 }
 
+// manage setup for search function
+// if there are multiple entries, list them all
+// if account is undefined, return an error.
+
 function searchAccounts(finddesc)  {
   foundAccount = findAccount(finddesc);
   var count = 0;
@@ -56,6 +113,7 @@ function searchAccounts(finddesc)  {
   }
 }
 
+// go get all the accounts from disk storage
 
 function readAccounts() {
     var accounts = storage.getItemSync('accounts');
@@ -70,26 +128,56 @@ function readAccounts() {
     return accounts;
 }
 
-
+// CLEAR all the accounts from disk storage
 function clearAllAccounts() {
   accounts = [];
   writeAccounts();
 }
 
-
+// write all the accounts to disk storage
 function writeAccounts(accounts) {
     storage.setItemSync('accounts', accounts);
     console.log('Wrote data to storage.')
 }
 
+// initialize disk storage before accssing
 function initStorage() {
   storage.initSync();
 }
 
+// return the next sequential record id
+function getNextId () {
+   var accounts = readAccounts();
+   var numberOfAccounts = accounts.length;
+   var lastid = 0;
+   lastid = accounts[numberOfAccounts-1].id;
+   return (lastid + 1);
+}
+
+// main
 initStorage();
+// read args
+if (command === 'add' ) {
+  console.log('Adding ' + argv.description  + '...');
+  var nextid = getNextId();
+  createNewAccount(nextid, argv.description, argv.username, argv.password);
+} else if (command === 'search') {
+  console.log('Searching for ' + argv.description + '...');
+  searchAccounts(argv.description);
+} else if (command === 'clear') {
+  console.log('ARE YOU SURE?');
+  clearAllAccounts();
+} else if (command === 'print') {
+  console.log('print all accounts.');
+  clearAllAccounts();
+} } else {
+  console.log('no command.');
+}
+
+
 //clearAllAccounts();
 //createNewAccount(1497, 'Hulu', 'lulu', 'lulu34');
-searchAccounts('Hulu');
+
 
 
 

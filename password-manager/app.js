@@ -7,7 +7,9 @@ May 2017
 
 var typeOf = require('typeof');
 var storage = require('node-persist');
-var foundAccount = [];
+var crypto = require('crypto-js');
+var foundAccount = []
+var key = '1234';
 
 var argv = require('yargs')
     .command('add', 'adding accounts', function(yargs) {
@@ -53,15 +55,22 @@ var command = (argv._[0]);
 
 // creates a new password record
 function createNewAccount(idno, desc, usr, passw){
-  var newaccount = {};
+  var newaccount = [];
   newaccount.id = idno;
   newaccount.description = desc;
   newaccount.username = usr;
   newaccount.password = passw;
-  var accounts = readAccounts();
+  var accounts = readAccounts(key);
+  console.log(typeOf(accounts) + ' -accounttype');
+    console.log(accounts);
+  if (typeOf(accounts)==='undefined') {
+    accounts = [{}];
+  } else {
+    // add find account already in vault
+  }
   accounts.push(newaccount);
   console.log('Adding new account...');
-  writeAccounts(accounts);
+  writeAccounts(accounts, key);
 }
 
 
@@ -70,22 +79,27 @@ function createNewAccount(idno, desc, usr, passw){
 // if string does not exist, return undefined
 
 function findAccount (accountDesc) {
-   var accounts = readAccounts();
-   var numberOfAccounts = accounts.length;
-   var tempaccount = [];
-   var count = 0;
    var matches = 0;
-   console.log('There are ' + numberOfAccounts + ' accounts in the vault.');
-   accounts.forEach(function (account){
-     //console.log("Index:  " + (count + 1) + " Account description: " + accounts[count].description);
-   if (accountDesc === accounts[count].description) {
-       tempaccount.push(accounts[count]);
-       matches++;
-    } else {
-       //not a match
-    }
-    count = count + 1;
-   })
+   var accounts = readAccounts(key);
+   if (accounts = undefined) {
+      console.log('There are no accounts in the vault.');
+      matches = 0;
+   } else {
+       var numberOfAccounts = accounts.length;
+       var tempaccount = [];
+       var count = 0;
+       console.log('There are ' + numberOfAccounts + ' accounts in the vault.');
+       accounts.forEach(function (account){
+       //console.log("Index:  " + (count + 1) + " Account description: " + accounts[count].description);
+        if (accountDesc === accounts[count].description) {
+           tempaccount.push(accounts[count]);
+           matches++;
+         } else {
+           //not a match
+         }
+       count = count + 1;
+       })
+   }
    if (matches > 0) {
      return tempaccount
    } else {
@@ -115,14 +129,19 @@ function searchAccounts(finddesc)  {
 
 // go get all the accounts from disk storage
 
-function readAccounts() {
-    var accounts = storage.getItemSync('accounts');
-
-    if (typeOf(accounts)==='array') {
-      console.log('Reading data from storage...');
-      //console.log(accounts);
+function readAccounts(key) {
+    console.log('Reading data from storage...');
+    var dataFromFile = storage.getItemSync('accounts');
+    console.log(dataFromFile);
+    console.log(typeOf(dataFromFile));
+    if ((typeOf(dataFromFile)==='string') && (dataFromFile === '')) {
+      console.log('Accounts array is empty. Use add command to add a new account.');
+      accounts = undefined;
     } else {
-      console.log('Accounts array is empty.');
+      var bytes = crypto.AES.decrypt(dataFromFile, key);
+      accounts = JSON.parse(bytes.toString(crypto.enc.Utf8));
+      console.log('decrypted. ' + accounts);
+    //console.log(accounts);
     }
 
     return accounts;
@@ -130,14 +149,21 @@ function readAccounts() {
 
 // CLEAR all the accounts from disk storage
 function clearAllAccounts() {
-  accounts = [];
-  writeAccounts();
+  accounts = undefined;
+  writeAccounts(accounts, key);
 }
 
 // write all the accounts to disk storage
-function writeAccounts(accounts) {
-    storage.setItemSync('accounts', accounts);
-    console.log('Wrote data to storage.')
+function writeAccounts(accounts, key) {
+   if (typeOf(accounts) === 'undefined') {
+     var writethis = '';
+   } else {
+     console.log(accounts);
+     var accountsJSON = JSON.stringify(accounts);
+     var writethis = crypto.AES.encrypt(accountsJSON, key);
+   }
+   storage.setItemSync('accounts', writethis);
+   console.log('Wrote data to storage.')
 }
 
 // initialize disk storage before accssing
@@ -147,11 +173,15 @@ function initStorage() {
 
 // return the next sequential record id
 function getNextId () {
-   var accounts = readAccounts();
-   var numberOfAccounts = accounts.length;
-   var lastid = 0;
-   lastid = accounts[numberOfAccounts-1].id;
-   return (lastid + 1);
+  var lastid = 0;
+  var accounts = readAccounts(key);
+  if (typeOf(accounts) ==='undefined') {
+    console.log('Accounts array is empty. Setting new index to 0001.');
+  } else {
+    var numberOfAccounts = accounts.length;
+    lastid = accounts[numberOfAccounts-1].id;
+  }
+  return (lastid + 1);
 }
 
 // main
@@ -170,7 +200,7 @@ if (command === 'add' ) {
 } else if (command === 'print') {
   console.log('print all accounts.');
   clearAllAccounts();
-} } else {
+} else {
   console.log('no command.');
 }
 
@@ -204,5 +234,5 @@ storage.setItemSync('accounts', [{
 */
 
 
-//storage.setItemSync('accounts', []);
+//storage.setItemSync('accounts', {});
 //var accounts = storage.getItemSync(accounts);

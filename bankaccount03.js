@@ -49,6 +49,9 @@ function getAccount(username){
 
 function listAccounts(){
   accounts.forEach(function (account){
+    console.log('listing...');
+    console.log(accounts);
+    console.log(' ');
     console.log("Index:  " + count + " Account Number: " + accounts[count].balance);
     count = count + 1;
   });

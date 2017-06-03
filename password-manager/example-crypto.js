@@ -5,9 +5,22 @@ var msg = { "users": [
             { name: "Dave", id: "6677" }
           ]
         };
+//var mersg = "\{ \"id\": 1 , \"description\": \"gmail\" , \"username\": \"mectapus\" , \"password\": \"blargh\" \}"
+
+var mersg = '{ \"accounts\":  \[ \{ \"id\": 1 , \"description\": \"gmail\" , \"username\": \"mectapus\" , \"password\": \"blargh\" \} \] \} '
+var mersgage = { "accounts":
+                 [
+                   { "id": 1 ,
+                     "description": "gmail" ,
+                     "username": "mectapus" ,
+                     "password": "blargh"
+                   }
+                 ]
+               }
+
 var key ='abc123';
-var JSONmsg = JSON.stringify(msg);
-  console.log(JSONmsg)
+var JSONmsg = JSON.stringify(mersgage);
+console.log(JSONmsg);
 var encryptmsg = crypto.AES.encrypt(JSONmsg, key);
 console.log('Encrypted: ' + encryptmsg);
 
@@ -19,4 +32,4 @@ console.log(" ");
 console.log(msg);
 console.log(typeof(msg));
 //console.log('decrypted: ' + users[0].name + ' ' + users[0].id);
-console.log(msg.users[0].name);
+console.log(msg.accounts[0].username);

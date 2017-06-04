@@ -8,9 +8,9 @@ June 2017
 
 var typeOf = require('typeof');
 var storage = require('node-persist');
-var CryptoJS = require('crypto-js');
+var crypto = require('crypto-js');
 var foundAccount = []
-var key = '1234';
+
 var util = require('util');
 
 
@@ -119,8 +119,8 @@ function readAccounts(key) {
     console.log(typeOf(dataFromFile))
      // accounts = datafromFile;
 
-      //var bytes = CryptoJS.AES.decrypt(dataFromFile, key);
-      //accounts = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+      //var bytes = crypto.AES.decrypt(dataFromFile, key);
+      //accounts = JSON.parse(bytes.toString(crypto.enc.Utf8));
       //console.log('decrypted. ' + accounts);
       console.log(dataFromFile);
     }
@@ -187,7 +187,7 @@ function writeAccounts(accounts, key) {
                ];
    */
   var writethis = accounts;
-  //  var writethis = CryptoJS.AES.encrypt(horse, key);
+  //  var writethis = crypto.AES.encrypt(horse, key);
   //  console.log(writethis);
    }
    storage.setItemSync('accounts1', writethis);
@@ -213,16 +213,40 @@ function printAllAccounts() {
 function loadArray() {
   var accounts = {};
   var accountArray= [];
-  var writethis = [
-           { id: 1233, description: "gmail", username: "4qw437", password: "4sd37" },
-           { id: 1234, description: "Bob", username: "22rr31", password: "4qwdsd7" },
-           { id: 1235, description: "Dave", username: "66ew77", password: "sadasds" }
-         ];
 
-    accounts = writethis;
-//  var writethis = CryptoJS.AES.encrypt(horse, key);
-     console.log(writethis);
-     storage.setItemSync('accounts1', accounts);
+  /*
+  var writethis = { "norman":
+                    [
+                      { id: 1233, description: "gmail", username: "4qw437", password: "4sd37" },
+                      { id: 1234, description: "Bob", username: "22rr31", password: "4qwdsd7" },
+                      { id: 1235, description: "Dave", username: "66ew77", password: "sadasds" }
+                    ]
+                  };
+  */
+
+  var writethis = { "norman":
+                     [
+                       { "id": 1233, "description": "gmail", "username": "4qw437", "password": "4sd37" },
+                       { "id": 1234, "description": "Bob", "username": "22rr31", "password": "4qwdsd7" },
+                       { "id": 1235, "description": "Dave", "username": "66ew77", "password": "sadasds" }
+                     ]
+                   };
+  var key = 'abc123';
+  console.log(writethis);
+  console.log(typeof(writethis));
+    var JSONmsg = JSON.stringify(writethis);
+     console.log(JSONmsg);
+     console.log(typeof(JSONmsg));
+     console.log('   ');
+     console.log('   ');
+     console.log('about to encrypt');
+     var louis = crypto.AES.encrypt(JSONmsg, key);
+     console.log('encrypted');
+     console.log(typeof(louis));
+    //accounts = writethis;
+    //  var writethis = crypto.AES.encrypt(horse, key);
+
+     //storage.setItemSync('accounts1', louis);
      console.log('Wrote data to storage.')
 
 }
